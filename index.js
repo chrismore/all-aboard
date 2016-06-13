@@ -554,6 +554,18 @@ function overrideDefaults() {
     }
 }
 
+/** This is called when the add-on is unloaded. If the reason is either disable,
+ * or shutdown, we can do some cleanup.
+ */
+exports.onUnload = function(reason) {
+    if (reason === 'disable' || reason === 'shutdown') {
+
+        if (typeof aboutHome !== 'undefined') {
+            aboutHome.destroy();
+        }
+    }
+};
+
 /**
 * Initializes the add-on, adds the icon to the chrome and checks the time elapsed
 * since a sidebar was last shown.

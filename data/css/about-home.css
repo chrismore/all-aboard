@@ -5,7 +5,7 @@
     width: 470px;
 }
 
-.button {
+.allaboard-snippet .button {
     position: relative;
     display: inline-block;
     background-color: #0095dd;
@@ -20,13 +20,13 @@
     transition: background-color .1s ease-in-out;
 }
 
-.button:hover,
-.button:focus {
+.allaboard-snippet .button:hover,
+.allaboard-snippet .button:focus {
     background-color: #33aae4;
     border-color: #0092cc;
 }
 
-.button:active {
+.allaboard-snippet .button:active {
     position: relative;
     top: 1px;
 }
