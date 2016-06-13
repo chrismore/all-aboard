@@ -321,19 +321,34 @@ function showSidebar(sidebarProps, contentURL) {
 
 /**
  * Modifies the about:home page to show a snippet that matches the current sidebar.
- * @param {int} contentStep - The content step we are currently displaying
+ * @param {string} track - The current sidebar's track
+ * @param {int} step - The current sidebar's content step
  */
-function modifyAboutHome(contentStep) {
+function modifyAboutHome(track, step) {
     aboutHome = pageMod.PageMod({
         include: /about:home/,
         contentScriptFile: './js/about-home.js',
         contentScriptWhen: 'ready',
         contentStyleFile: './css/about-home.css',
         onAttach: function(worker) {
-            // because calling destroy does not unregister the injected script
-            // we do not want the script to be self executing. We therefore intentionally
-            // emit an event that tells the code to execute.
-            worker.port.emit('modify', contentStep);
+            // constructs uri to snippet content
+            var contentURL = './tmpl/' + track + '/content' + step + '-snippet.html';
+            // load snippet HTML
+            var snippetContent = self.data.load(contentURL);
+            // emit modify event and passes snippet HTML as a string
+            worker.port.emit('modify', snippetContent);
+
+            // listens to an intent message and calls the relevant function
+            // based on intent.
+            worker.port.on('intent', function(intent) {
+                switch(intent) {
+                    case 'search':
+                        showSearch();
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
     });
 }
@@ -375,7 +390,7 @@ function toggleSidebar() {
         sidebarProps.step = contentStep;
         showSidebar(sidebarProps, contentURL);
         // initialize the about:home pageMod
-        modifyAboutHome(contentStep);
+        modifyAboutHome(track, contentStep);
 
         // do not call the timer once we have reached
         // the final content item.
