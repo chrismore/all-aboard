@@ -65,6 +65,7 @@ var { XMLHttpRequest } = require('sdk/net/xhr');
 var UITour = Cu.import('resource:///modules/UITour.jsm').UITour;
 var LightweightThemeManager = Cu.import('resource://gre/modules/LightweightThemeManager.jsm').LightweightThemeManager;
 
+var aboutHome;
 var allAboard;
 var content;
 var firstrunRegex = /.*firefox[\/\d*|\w*\.*]*\/firstrun\//;
@@ -315,6 +316,25 @@ function showSidebar(sidebarProps, contentURL) {
 }
 
 /**
+ * Modifies the about:home page to show a snippet that matches the current sidebar.
+ * @param {int} contentStep - The content step we are currently displaying
+ */
+function modifyAboutHome(contentStep) {
+    aboutHome = pageMod.PageMod({
+        include: /about:home/,
+        contentScriptFile: './js/about-home.js',
+        contentScriptWhen: 'ready',
+        contentStyleFile: './css/about-home.css',
+        onAttach: function(worker) {
+            // because calling destroy does not unregister the injected script
+            // we do not want the script to be self executing. We therefore intentionally
+            // emit an event that tells the code to execute.
+            worker.port.emit('modify', contentStep);
+        }
+    });
+}
+
+/**
 * Shows the next sidebar for the current track i.e. values or utility
 */
 function toggleSidebar() {
@@ -349,6 +369,8 @@ function toggleSidebar() {
         // add contentStep to sidebarProps so we do not have to pass another parameter
         sidebarProps.step = contentStep;
         showSidebar(sidebarProps, contentURL);
+        // initialize the about:home pageMod
+        modifyAboutHome(contentStep);
 
         // do not call the timer once we have reached
         // the final content item.
@@ -478,6 +500,18 @@ function modifyFirstrun() {
     });
 }
 
+/**
+ * This is called when the add-on is unloaded. If the reason is either disable,
+ * or shutdown, we can do some cleanup.
+ */
+exports.onUnload = function(reason) {
+    if (reason === 'disable' || reason === 'shutdown') {
+
+        if (typeof aboutHome !== 'undefined') {
+            aboutHome.destroy();
+        }
+    }
+};
 
 /**
 * Initializes the add-on, adds the icon to the chrome and checks the time elapsed
