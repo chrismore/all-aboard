@@ -4,8 +4,14 @@
 
 from pypom import Page
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as expected
+
 
 class Sidebar(Page):
+
+    _sidebar_visible_locator = (By.CSS_SELECTOR,
+            '#content-deck #sidebar-box[sidebarcommand="viewWebPanelsSidebar"]')  # noqa E501
 
     @property
     def current_step(self):
@@ -25,15 +31,6 @@ class Sidebar(Page):
             return container.getAttribute('id');
         """)
 
-    @property
-    def prize_button(self):
-        return self.selenium.execute_script("""
-            var button = document.querySelector('#sidebar').contentDocument
-                              .querySelector('#web-panels-browser').contentDocument
-                              .querySelector('footer #prize');
-            return button;
-        """)
-
     def claim_prize(self):
         return self.selenium.execute_script("""
             var button = document.querySelector('#sidebar').contentDocument
@@ -49,3 +46,11 @@ class Sidebar(Page):
                               .querySelector('main button');
             cta.click();
         """)
+
+    def wait_for_sidebar_visible(self):
+        """ Enures that the sidebar is visible """
+        return self.wait.until(
+            expected.presence_of_element_located(
+                self._sidebar_visible_locator
+            )
+        )

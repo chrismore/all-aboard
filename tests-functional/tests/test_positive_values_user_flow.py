@@ -4,10 +4,6 @@
 
 import pytest
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as expected
-from selenium.webdriver.support.ui import WebDriverWait as Wait
-
 from pages.all_aboard import AllAboard
 from pages.firstrun import Firstrun
 from pages.sidebar import Sidebar
@@ -30,53 +26,24 @@ def test_successful_values_flow(base_url,
     # switch to browser chrome
     selenium.set_context('chrome')
 
-    all_aboard = AllAboard(selenium)
+    all_aboard = AllAboard(selenium, timeout=20)
     sidebar = Sidebar(selenium)
 
-    # ensure that add-on action button is added as soon as we leave firstrun
-    Wait(selenium, 2).until(
-        expected.presence_of_element_located(
-            (By.ID, 'action-button--all-aboard-v1-all-aboard')
-        )
-    )
-
-    # enure that the sidebar is automatically shown on first notification
-    Wait(selenium, 3).until(
-        expected.presence_of_element_located((
-            By.CSS_SELECTOR,
-            '#content-deck #sidebar-box[sidebarcommand="viewWebPanelsSidebar"]'
-            )
-        )
-    )
+    all_aboard.wait_for_action_button_present()
+    sidebar.wait_for_sidebar_visible()
 
     previous_step = 0
     while int(sidebar.current_step) < 5:
-        # wait for the next notification to happen
-        notification = Wait(selenium, 15).until(
-            expected.presence_of_element_located((
-                By.CSS_SELECTOR,
-                '#action-button--all-aboard-v1-all-aboard[badge="1"]'
-                )
-            )
-        )
-
-        # once the content notification happens, click the action button
-        notification.click()
-
+        all_aboard.load_next_sidebar()
         # ensure that the sidebar is shown after click on ActionButton
         assert all_aboard.sidebar.get_attribute('hidden') == 'false'
         # ensure that the correct sidebar is shown
         assert int(sidebar.current_step) == previous_step + 1
-
         # store the current step for the next iteration
         previous_step = int(sidebar.current_step)
         # move the experience on to the next step
         sidebar.click_cta()
 
     # click the claim prize button
-    sidebar.claim_prize()
-
-    # ensure that the reward sidebar is shown
-    Wait(selenium, 3).until(
-        lambda s: sidebar.content_container_id == 'reward'
-    )
+    all_aboard.load_next_sidebar()
+    assert sidebar.content_container_id == 'reward'
