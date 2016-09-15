@@ -32,6 +32,8 @@ def test_successful_values_flow(base_url,
     all_aboard.wait_for_action_button_present()
     sidebar.wait_for_sidebar_visible()
 
+    all_aboard.load_next_sidebar()
+
     previous_step = 0
     while int(sidebar.current_step) < 5:
         all_aboard.load_next_sidebar()
@@ -45,5 +47,5 @@ def test_successful_values_flow(base_url,
         sidebar.click_cta()
 
     # click the claim prize button
-    all_aboard.load_next_sidebar()
-    assert sidebar.content_container_id == 'reward'
+    sidebar.claim_prize()
+    assert sidebar.ensure_reward_sidebar_loaded() == 'reward'
