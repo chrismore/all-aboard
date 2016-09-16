@@ -32,17 +32,13 @@ def test_successful_values_flow(base_url,
     all_aboard.wait_for_action_button_present()
     sidebar.wait_for_sidebar_visible()
 
-    all_aboard.load_next_sidebar()
-
-    previous_step = 0
-    while int(sidebar.current_step) < 5:
+    for i in range(5):
+        selenium.set_context('chrome')
         all_aboard.load_next_sidebar()
         # ensure that the sidebar is shown after click on ActionButton
-        assert all_aboard.sidebar.get_attribute('hidden') == 'false'
+        assert sidebar.sidebar.get_attribute('hidden') == 'false'
         # ensure that the correct sidebar is shown
-        assert int(sidebar.current_step) == previous_step + 1
-        # store the current step for the next iteration
-        previous_step = int(sidebar.current_step)
+        assert sidebar.current_step == i + 1
         # move the experience on to the next step
         sidebar.click_cta()
 

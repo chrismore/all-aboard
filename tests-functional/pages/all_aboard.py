@@ -12,20 +12,16 @@ class AllAboard(Page):
 
     _action_button_locator = (
         By.ID,
-        'action-button--all-aboard-v1-all-aboard'
+        'action-button--all-aboard-v12-all-aboard'
     )
     _active_notification_locator = (
         By.CSS_SELECTOR,
-        '#action-button--all-aboard-v1-all-aboard[badge="1"]'
+        '#action-button--all-aboard-v12-all-aboard[badge="1"]'
     )
-    _sidebar_locator = (
-        By.CSS_SELECTOR,
-        '#content-deck #sidebar-box'
+    _navbar_locator = (
+        By.ID,
+        'nav-bar'
     )
-
-    @property
-    def sidebar(self):
-        return self.find_element(*self._sidebar_locator)
 
     def load_next_sidebar(self):
         """ Waits for notification, clicks the action button """
@@ -34,13 +30,12 @@ class AllAboard(Page):
 
     def wait_for_action_button_present(self):
         """Ensure that action button is present"""
-        self.wait.until(lambda s: expected.presence_of_element_located(
+        self.wait.until(expected.presence_of_element_located(
             self._action_button_locator))
 
     def wait_for_active_notification(self):
         # wait for the next notification to happen
-        return self.wait.until(
-            expected.presence_of_element_located(
+        return self.wait.until(expected.presence_of_element_located(
                 self._active_notification_locator
             )
         )
